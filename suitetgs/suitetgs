@@ -1,0 +1,71 @@
+#!/bin/bash
+# ------------------------------------------------------------------
+# [Author: Boyan Naydenov] TGS Control Suite
+#  Terrassa Ground Station (UPC - ESEIAAT) script designed to handle
+#  the different functional blocks (antenna controllers, radio, webcam).
+# ------------------------------------------------------------------
+
+VERSION=0.1
+SUBJECT=suite-tgs
+USAGE="$(basename "$0") [-h] [-s n] -- Suite to 
+
+where:
+    -h  show this help text
+    -s  set the seed value (default: 42)"
+
+# --- Options processing -------------------------------------------
+# If no arguments are given then help screen is shown.
+if [ $# == 0 ] ; then
+    echo $USAGE
+    exit 1;
+fi
+
+while getopts ":a:hv" opt; do
+  case $opt in
+    v)
+        echo "Version $VERSION"
+        exit 0;
+        ;;    
+    h) 
+        echo "$USAGE"
+        exit 0;
+        ;;   
+    a)
+        echo "-a was triggered, Parameter: $OPTARG" >&2
+        ;;
+    \?)
+        echo "Invalid option: -$OPTARG" >&2
+        exit 0;
+        ;;
+    :)
+        echo "Option -$OPTARG requires an argument." >&2
+        exit 0;
+        ;;
+    *)
+        echo "Unknown error while processing options" >&2
+        exit 0;
+        ;;        
+  esac
+done
+
+shift $(($OPTIND - 1))
+
+param1=$1
+param2=$2
+
+# --- Locks -------------------------------------------------------
+# Avoids script to be run paralelly, using locks
+LOCK_FILE=/tmp/$SUBJECT.lock
+if [ -f "$LOCK_FILE" ]; then
+   echo "Script is already running"
+   exit
+fi
+# trap catches some SIGNALS such as KILL( Crtl + C) and deletes lock
+trap "rm -f $LOCK_FILE" EXIT
+touch $LOCK_FILE
+
+# --- Body --------------------------------------------------------
+#  SCRIPT LOGIC GOES HERE
+echo $param1
+echo $param2
+# -----------------------------------------------------------------
