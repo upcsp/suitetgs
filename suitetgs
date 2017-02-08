@@ -7,11 +7,20 @@
 
 VERSION=0.1
 SUBJECT=suite-tgs
-USAGE="$(basename "$0") [-h] [-s n] -- Suite to 
+USAGE="$(basename "$0") [-h] [-v -c -r -g -a] -- Terrassa Ground Station (UPC - ESEIAAT) script designed to handle
+the different functional blocks (antenna controllers, radio, webcam). 
 
 where:
     -h  show this help text
-    -s  set the seed value (default: 42)"
+    -v  show script version
+    -c  view roof camera
+    -C  kill camera process
+    -r  start rotator daemon
+    -R  kill rotator process
+    -g  start GPredict
+    -G  kill GPredict
+    -a  start camera, rotator daemon and GPredict
+    -A  kill all processes"
 
 # --- Options processing -------------------------------------------
 # If no arguments are given then help screen is shown.
@@ -20,7 +29,7 @@ if [ $# == 0 ] ; then
     exit 1;
 fi
 
-while getopts ":a:hv" opt; do
+while getopts "hvcCrRgGaA" opt; do
   case $opt in
     v)
         echo "Version $VERSION"
@@ -30,8 +39,99 @@ while getopts ":a:hv" opt; do
         echo "$USAGE"
         exit 0;
         ;;   
+    c)
+        echo "Showing Camera"
+        vlc v4l2:///dev/video0 > /dev/null 2>&1 &
+        retval=$?;
+        if [ "$retval" != "0" ]; then
+            echo "Return code was not zero but $retval"
+            exit 1;
+        fi
+        exit 0;
+        ;;
+    C)
+        mycmd() {
+            ps -aux | less | grep vlc | sed -n '1 p' | awk '{ print $2 }'
+        }
+        id=$(mycmd)
+        kill $id
+        exit 0;
+        ;;
+    r)
+        echo "Starting Rotor Daemon"
+        rotctld -m 603 -r /dev/rotator > /dev/null 2>&1 &
+        retval=$?;
+        if [ "$retval" != "0" ]; then
+            echo "Return code was not zero but $retval"
+            exit 1;
+        fi       
+        exit 0;
+        ;;
+    R)
+        mycmd() {
+            ps -aux | less | grep rotctl | sed -n '1 p' | awk '{ print $2 }'
+        }
+        id=$(mycmd)
+        kill $id
+        exit 0;
+        ;;
+    g)
+        echo "Start GPredict"
+        gpredict > /dev/null 2>&1 &
+        retval=$?;
+        if [ "$retval" != "0" ]; then
+            echo "Return code was not zero but $retval"
+            exit 1;
+        fi                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
+        exit 0;
+        ;;
+    G) 
+        mycmd() {
+            ps -aux | less | grep gpredict | sed -n '1 p' | awk '{ print $2 }'
+        }
+        id=$(mycmd)
+        kill $id
+        exit 0;
+        ;;        
     a)
-        echo "-a was triggered, Parameter: $OPTARG" >&2
+        echo "Start camera, rotator daemon and GPredict"
+        vlc v4l2:///dev/video0 > /dev/null 2>&1 &
+        retval=$?;
+        if [ "$retval" != "0" ]; then
+            echo "Return code was not zero but $retval"
+            exit 1;
+        fi
+        rotctld -m 603 -r /dev/rotator > /dev/null 2>&1 &
+        retval=$?;
+        if [ "$retval" != "0" ]; then
+            echo "Return code was not zero but $retval"
+            exit 1;
+        fi
+        gpredict > /dev/null 2>&1 &
+        retval=$?;
+        if [ "$retval" != "0" ]; then
+            echo "Return code was not zero but $retval"
+            exit 1;
+        fi             
+        exit 0;
+        ;;
+    A)
+        mycmd() {
+            ps -aux | less | grep vlc | sed -n '1 p' | awk '{ print $2 }'
+        }
+        mycmd1() {
+            ps -aux | less | grep rotctl | sed -n '1 p' | awk '{ print $2 }'
+        }
+        mycmd2() {
+            ps -aux | less | grep gpredict | sed -n '1 p' | awk '{ print $2 }'
+        }                
+        id=$(mycmd)
+        kill $id        
+        id=$(mycmd1)
+        kill $id        
+        id=$(mycmd2)
+        kill $id                  
+        exit 0;
         ;;
     \?)
         echo "Invalid option: -$OPTARG" >&2
@@ -48,10 +148,10 @@ while getopts ":a:hv" opt; do
   esac
 done
 
-shift $(($OPTIND - 1))
+#shift $(($OPTIND - 1))
 
-param1=$1
-param2=$2
+#param1=$1
+#param2=$2
 
 # --- Locks -------------------------------------------------------
 # Avoids script to be run paralelly, using locks
@@ -66,6 +166,6 @@ touch $LOCK_FILE
 
 # --- Body --------------------------------------------------------
 #  SCRIPT LOGIC GOES HERE
-echo $param1
-echo $param2
+#echo $param1
+#echo $param2
 # -----------------------------------------------------------------
