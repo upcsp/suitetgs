@@ -13,11 +13,11 @@ Please, refer to the program help menu in order to learn how to use it.
 
 ### Todos
 
- - long flags
- - Add dependecies managment
- - Cam streaming:
- 		- On server: cvlc -vvv v4l2:///dev/video0 --sout '#standard{access=http,mux=ogg,dst=<server-ip>:<server-port>}' 
- 		- On client: cvlc http://<server-ip>:<streaming-port>/
+1. long flags
+2. Add dependecies managment
+3. Cam streaming:
+..* On server: cvlc -vvv v4l2:///dev/video0 --sout '#standard{access=http,mux=ogg,dst=*server-ip*:*server-port*}' 
+..* On client: cvlc http://*server-ip*:*streaming-port*/
 
 License
 ----
