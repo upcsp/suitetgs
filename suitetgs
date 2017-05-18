@@ -5,45 +5,68 @@
 #  the different functional blocks (antenna controllers, radio, webcam).
 # ------------------------------------------------------------------
 
+# for file  to work globally: sudo ln -s /path/to/file /usr/bin/suitetgs
 VERSION=0.1
 SUBJECT=suite-tgs
 USAGE="$(basename "$0") [-h] [-v -c -r -g -a] -- Terrassa Ground Station (UPC - ESEIAAT) script designed to handle
-the different functional blocks (antenna controllers, radio, webcam). 
-
+the different functional blocks (antenna controllers, radio, webcam).
+\n
 where:
     -h  show this help text
     -v  show script version
+    -t  start roof camera to stream into a TCP socket
+    -T  stop roof camera to stream into a TCP socket
     -c  view roof camera
     -C  kill camera process
     -r  start rotator daemon
     -R  kill rotator process
     -g  start GPredict
     -G  kill GPredict
-    -i  start GPredict TCP Socket Interface for rigctld
-    -I  stop GPredict TCP Socket Interface for rigctld
-    -a  start camera, rotator daemon, GPredict and Gpredict interface
-    -A  kill all processes"
+    -i  start GPredict TCP Socket Interface for rotctld
+    -I  stop GPredict TCP Socket Interface for rotctld
+
+
+NOTE: for this to work properly the following dependencies are needed:
+  vlc, hamlib, GPredict and rotor-calibration script needs to be set as global executable"
 
 # --- Options processing -------------------------------------------
 # If no arguments are given then help screen is shown.
 if [ $# == 0 ] ; then
-    echo $USAGE
+    printf "$USAGE \n\n"
     exit 1;
 fi
 
-while getopts "hvcCrRgGaA" opt; do
+while getopts "hvtTcCrRgG" opt; do
   case $opt in
     v)
         echo "Version $VERSION"
         exit 0;
         ;;    
     h) 
-        echo "$USAGE"
+        printf "$USAGE \n\n"
         exit 0;
-        ;;   
+        ;;
+    t)
+        echo "Streaming camera"
+        cvlc -vvv v4l2:///dev/video0 --sout '#transcode{vcodec=mp4v,vb=800}:standard{access=http,mux=ogg,dst=147.83.3.136:8080}'
+        retval=$?;
+        if [ "$retval" != "0" ]; then
+            echo "Return code was not zero but $retval"
+            exit 1;
+        fi
+        exit 0;
+        ;;
+    T)
+        mycmd() {
+            ps -aux | less | grep /usr/bin/vlc | sed -n '2 p' | awk '{ print $2 }'
+        }
+        id=$(mycmd)
+        kill $id
+        exit 0;
+        ;;
     c)
         echo "Showing Camera"
-        vlc v4l2:///dev/video0 > /dev/null 2>&1 &
+        cvlc v4l2:///dev/video0 
         retval=$?;
         if [ "$retval" != "0" ]; then
             echo "Return code was not zero but $retval"
@@ -53,7 +76,7 @@ while getopts "hvcCrRgGaA" opt; do
         ;;
     C)
         mycmd() {
-            ps -aux | less | grep vlc | sed -n '1 p' | awk '{ print $2 }'
+            ps -aux | less | grep cvlc | sed -n '1 p' | awk '{ print $2 }'
         }
         id=$(mycmd)
         kill $id
@@ -61,7 +84,7 @@ while getopts "hvcCrRgGaA" opt; do
         ;;
     r)
         echo "Starting Rotor Daemon"
-        rotctld -m 603 -r /dev/rotator > /dev/null 2>&1 &
+        rotctld -m 603 -r /dev/rotator
         retval=$?;
         if [ "$retval" != "0" ]; then
             echo "Return code was not zero but $retval"
@@ -79,7 +102,7 @@ while getopts "hvcCrRgGaA" opt; do
         ;;
     g)
         echo "Start GPredict"
-        gpredict > /dev/null 2>&1 &
+        gpredict
         retval=$?;
         if [ "$retval" != "0" ]; then
             echo "Return code was not zero but $retval"
@@ -96,8 +119,8 @@ while getopts "hvcCrRgGaA" opt; do
         exit 0;
         ;;
     i)
-        echo "Start GPRedict interface for rigctld"
-        node /home/tgs/repos/socket-interface/tcp-server.js > /dev/null 2>&1 &
+        echo "Start GPredict interface for rotctld"
+        rotor-calibration 
         retval=$?;
         if [ "$retval" != "0" ]; then
             echo "Return code was not zero but $retval"
@@ -107,66 +130,66 @@ while getopts "hvcCrRgGaA" opt; do
         ;;
     I) 
         mycmd() {
-            ps -aux | less | grep /home/tgs/repos/socket-interface/tcp-server.js | sed -n '1 p' | awk '{ print $2 }'
+            ps -aux | less | grep rotor-calibration | sed -n '1 p' | awk '{ print $2 }'
         }
         id=$(mycmd)
         kill $id
         exit 0;
         ;;        
-    a)
-        echo "Start camera, rotator daemon and GPredict"
-        vlc v4l2:///dev/video0 > /dev/null 2>&1 &
-        retval=$?;
-        if [ "$retval" != "0" ]; then
-            echo "Return code was not zero but $retval"
-            exit 1;
-        fi
-        echo "Starting Rotor Daemon"
-        rotctld -m 603 -r /dev/rotator > /dev/null 2>&1 &
-        retval=$?;
-        if [ "$retval" != "0" ]; then
-            echo "Return code was not zero but $retval"
-            exit 1;
-        fi
-        echo "Start GPredict"
-        gpredict > /dev/null 2>&1 &
-        retval=$?;
-        if [ "$retval" != "0" ]; then
-            echo "Return code was not zero but $retval"
-            exit 1;
-        fi
-        echo "Start GPredict interface for rigctld"
-        node /home/tgs/repos/socket-interface/tcp-server.js > /dev/null 2>&1 &
-        retval=$?;
-        if [ "$retval" != "0" ]; then
-            echo "Return code was not zero but $retval"
-            exit 1;
-        fi                       
-        exit 0;
-        ;;
-    A)
-        mycmd() {
-            ps -aux | less | grep vlc | sed -n '1 p' | awk '{ print $2 }'
-        }
-        mycmd1() {
-            ps -aux | less | grep rotctl | sed -n '1 p' | awk '{ print $2 }'
-        }
-        mycmd2() {
-            ps -aux | less | grep gpredict | sed -n '1 p' | awk '{ print $2 }'
-        }
-        mycmd3() {
-            ps -aux | less | grep /home/tgs/repos/socket-interface/tcp-server.js | sed -n '1 p' | awk '{ print $2 }'
-        }                      
-        id=$(mycmd)
-        kill $id        
-        id=$(mycmd1)
-        kill $id        
-        id=$(mycmd2)
-        kill $id
-        id=$(mycmd3)
-        kill $id                           
-        exit 0;
-        ;;
+    # a)
+    #     echo "Start camera, rotator daemon and GPredict"
+    #     vlc v4l2:///dev/video0 
+    #     retval=$?;
+    #     if [ "$retval" != "0" ]; then
+    #         echo "Return code was not zero but $retval"
+    #         exit 1;
+    #     fi
+    #     echo "Starting Rotor Daemon"
+    #     rotctld -m 603 -r /dev/rotator 
+    #     retval=$?;
+    #     if [ "$retval" != "0" ]; then
+    #         echo "Return code was not zero but $retval"
+    #         exit 1;
+    #     fi
+    #     echo "Start GPredict"
+    #     gpredict 
+    #     retval=$?;
+    #     if [ "$retval" != "0" ]; then
+    #         echo "Return code was not zero but $retval"
+    #         exit 1;
+    #     fi
+    #     echo "Start GPredict interface for rotctld"
+    #     rotor-calibration 
+    #     retval=$?;
+    #     if [ "$retval" != "0" ]; then
+    #         echo "Return code was not zero but $retval"
+    #         exit 1;
+    #     fi                       
+    #     exit 0;
+    #     ;;
+    # A)
+    #     mycmd() {
+    #         ps -aux | less | grep vlc | sed -n '1 p' | awk '{ print $2 }'
+    #     }
+    #     mycmd1() {
+    #         ps -aux | less | grep rotctld | sed -n '1 p' | awk '{ print $2 }'
+    #     }
+    #     mycmd2() {
+    #         ps -aux | less | grep gpredict | sed -n '1 p' | awk '{ print $2 }'
+    #     }
+    #     mycmd3() {
+    #         ps -aux | less | grep rotor-calibration | sed -n '1 p' | awk '{ print $2 }'
+    #     }                      
+    #     id=$(mycmd)
+    #     kill $id        
+    #     id=$(mycmd1)
+    #     kill $id        
+    #     id=$(mycmd2)
+    #     kill $id
+    #     id=$(mycmd3)
+    #     kill $id                           
+    #     exit 0;
+    #     ;;
     \?)
         echo "Invalid option: -$OPTARG" >&2
         exit 0;
