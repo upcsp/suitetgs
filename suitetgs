@@ -6,24 +6,26 @@
 # ------------------------------------------------------------------
 
 # for file  to work globally: sudo ln -s /path/to/file /usr/bin/suitetgs
+# for -g option, xdotool is required
+
 VERSION=0.1
 SUBJECT=suite-tgs
 USAGE="$(basename "$0") [-h] [-v -c -r -g -a] -- Terrassa Ground Station (UPC - ESEIAAT) script designed to handle
 the different functional blocks (antenna controllers, radio, webcam).
 \n
 where:
-    -h  show this help text
-    -v  show script version
-    -t  start roof camera to stream into a TCP socket
-    -T  stop roof camera to stream into a TCP socket
-    -c  view roof camera
-    -C  kill camera process
-    -r  start rotator daemon
-    -R  kill rotator process
-    -g  start GPredict
-    -G  kill GPredict
-    -i  start GPredict TCP Socket Interface for rotctld
-    -I  stop GPredict TCP Socket Interface for rotctld
+	-h  show this help text
+	-v  show script version
+	-t  start roof camera to stream into a TCP socket
+	-T  stop roof camera to stream into a TCP socket
+	-c  view roof camera
+	-C  kill camera process
+	-r  start rotator daemon
+	-R  kill rotator process
+	-g  start GPredict
+	-G  kill GPredict
+	-i  start GPredict TCP Socket Interface for rotctld
+	-I  stop GPredict TCP Socket Interface for rotctld
 
 
 NOTE: for this to work properly the following dependencies are needed:
@@ -32,176 +34,208 @@ NOTE: for this to work properly the following dependencies are needed:
 # --- Options processing -------------------------------------------
 # If no arguments are given then help screen is shown.
 if [ $# == 0 ] ; then
-    printf "$USAGE \n\n"
-    exit 1;
+	printf "$USAGE \n\n"
+	exit 1;
 fi
 
 while getopts "hvtTcCrRgGiI" opt; do
   case $opt in
-    v)
-        echo "Version $VERSION"
-        exit 0;
-        ;;    
-    h) 
-        printf "$USAGE \n\n"
-        exit 0;
-        ;;
-    t)
-        echo "Streaming camera"
-        cvlc -vvv v4l2:///dev/video0 --sout '#transcode{vcodec=mp4v,vb=800}:standard{access=http,mux=ogg,dst=147.83.3.136:8080}'
-        retval=$?;
-        if [ "$retval" != "0" ]; then
-            echo "Return code was not zero but $retval"
-            exit 1;
-        fi
-        exit 0;
-        ;;
-    T)
-        mycmd() {
-            ps -aux | less | grep /usr/bin/vlc | sed -n '2 p' | awk '{ print $2 }'
-        }
-        id=$(mycmd)
-        kill $id
-        exit 0;
-        ;;
-    c)
-        echo "Showing Camera"
-        cvlc v4l2:///dev/video0 
-        retval=$?;
-        if [ "$retval" != "0" ]; then
-            echo "Return code was not zero but $retval"
-            exit 1;
-        fi
-        exit 0;
-        ;;
-    C)
-        mycmd() {
-            ps -aux | less | grep cvlc | sed -n '1 p' | awk '{ print $2 }'
-        }
-        id=$(mycmd)
-        kill $id
-        exit 0;
-        ;;
-    r)
-        echo "Starting Rotor Daemon"
-        rotctld -m 603 -r /dev/rotator
-        retval=$?;
-        if [ "$retval" != "0" ]; then
-            echo "Return code was not zero but $retval"
-            exit 1;
-        fi       
-        exit 0;baudline
-        ;;
-    R)
-        mycmd() {
-            ps -aux | less | grep rotctl | sed -n '1 p' | awk '{ print $2 }'
-        }
-        id=$(mycmd)
-        kill $id
-        exit 0;
-        ;;
-    g)
-        echo "Start GPredict"
-        gpredict
-        retval=$?;
-        if [ "$retval" != "0" ]; then
-            echo "Return code was not zero but $retval"
-            exit 1;
-        fi                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
-        exit 0;
-        ;;
-    G) 
-        mycmd() {
-            ps -aux | less | grep gpredict | sed -n '1 p' | awk '{ print $2 }'
-        }
-        id=$(mycmd)
-        kill $id
-        exit 0;
-        ;;
-    i)
-        echo "Start GPredict interface for rotctld"
-        rotor-calibration 
-        retval=$?;
-        if [ "$retval" != "0" ]; then
-            echo "Return code was not zero but $retval"
-            exit 1;
-        fi                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
-        exit 0;
-        ;;
-    I) 
-        mycmd() {
-            ps -aux | less | grep rotor-calibration | sed -n '1 p' | awk '{ print $2 }'
-        }
-        id=$(mycmd)
-        kill $id
-        exit 0;
-        ;;        
-    # a)
-    #     echo "Start camera, rotator daemon and GPredict"
-    #     vlc v4l2:///dev/video0 
-    #     retval=$?;
-    #     if [ "$retval" != "0" ]; then
-    #         echo "Return code was not zero but $retval"
-    #         exit 1;
-    #     fi
-    #     echo "Starting Rotor Daemon"
-    #     rotctld -m 603 -r /dev/rotator 
-    #     retval=$?;
-    #     if [ "$retval" != "0" ]; then
-    #         echo "Return code was not zero but $retval"
-    #         exit 1;
-    #     fi
-    #     echo "Start GPredict"
-    #     gpredict 
-    #     retval=$?;
-    #     if [ "$retval" != "0" ]; then
-    #         echo "Return code was not zero but $retval"
-    #         exit 1;
-    #     fi
-    #     echo "Start GPredict interface for rotctld"
-    #     rotor-calibration 
-    #     retval=$?;
-    #     if [ "$retval" != "0" ]; then
-    #         echo "Return code was not zero but $retval"
-    #         exit 1;
-    #     fi                       
-    #     exit 0;
-    #     ;;
-    # A)
-    #     mycmd() {
-    #         ps -aux | less | grep vlc | sed -n '1 p' | awk '{ print $2 }'
-    #     }
-    #     mycmd1() {
-    #         ps -aux | less | grep rotctld | sed -n '1 p' | awk '{ print $2 }'
-    #     }
-    #     mycmd2() {
-    #         ps -aux | less | grep gpredict | sed -n '1 p' | awk '{ print $2 }'
-    #     }
-    #     mycmd3() {
-    #         ps -aux | less | grep rotor-calibration | sed -n '1 p' | awk '{ print $2 }'
-    #     }                      
-    #     id=$(mycmd)
-    #     kill $id        
-    #     id=$(mycmd1)
-    #     kill $id        
-    #     id=$(mycmd2)
-    #     kill $id
-    #     id=$(mycmd3)
-    #     kill $id                           
-    #     exit 0;
-    #     ;;
-    \?)
-        echo "Invalid option: -$OPTARG" >&2
-        exit 0;
-        ;;
-    :)
-        echo "Option -$OPTARG requires an argument." >&2
-        exit 0;
-        ;;
-    *)
-        echo "Unknown error while processing options" >&2
-        exit 0;
-        ;;        
+	v)
+		echo "Version $VERSION"
+		exit 0;
+		;;
+	h)
+		printf "$USAGE \n\n"
+		exit 0;
+		;;
+	t)
+		echo "Streaming camera"
+		cvlc -vvv v4l2:///dev/video0 --sout '#transcode{vcodec=mp4v,vb=800}:standard{access=http,mux=ogg,dst=147.83.3.136:8080}'
+		retval=$?;
+		if [ "$retval" != "0" ]; then
+			echo "Return code was not zero but $retval"
+			exit 1;
+		fi
+		exit 0;
+		;;
+	T)
+		mycmd() {
+			ps -aux | less | grep /usr/bin/vlc | sed -n '2 p' | awk '{ print $2 }'
+		}
+		id=$(mycmd)
+		kill $id
+		exit 0;
+		;;
+	c)
+		echo "Showing Camera"
+		cvlc v4l2:///dev/video0
+		retval=$?;
+		if [ "$retval" != "0" ]; then
+			echo "Return code was not zero but $retval"
+			exit 1;
+		fi
+		exit 0;
+		;;
+	C)
+		mycmd() {
+			ps -aux | less | grep cvlc | sed -n '1 p' | awk '{ print $2 }'
+		}
+		id=$(mycmd)
+		kill $id
+		exit 0;
+		;;
+	r)
+		echo "Starting Rotor Daemon"
+		rotctld -m 603 -r /dev/rotator
+		retval=$?;
+		if [ "$retval" != "0" ]; then
+			echo "Return code was not zero but $retval"
+			exit 1;
+		fi
+		exit 0;baudline
+		;;
+	R)
+		mycmd() {
+			ps -aux | less | grep rotctl | sed -n '1 p' | awk '{ print $2 }'
+		}
+		id=$(mycmd)
+		kill $id
+		exit 0;
+		;;
+	g)
+		echo "Start Gpredict tracking"
+		export DISPLAY=:0.0
+		#  starting gpredict
+		gpredict &
+		sleep 1
+		#  Get Gpredict
+		xdotool search --desktop 1 "GPREDICT" windowactivate --sync mousemove --window %1 0 0
+		sleep 0.01
+		# Open Rotator conifg
+		xdotool mousemove_relative 1300 0
+		sleep 0.01
+		xdotool mousemove_relative 0 30
+		sleep 0.01
+		xdotool click 1
+		sleep 0.01
+		xdotool mousemove 1200 200
+		sleep 0.01
+		xdotool click 1
+		sleep 1
+		# Set tolerance of rotator to 3 deg
+		xdotool search --desktop 1 "Rotator" windowactivate --sync mousemove --window %1 0 0
+		sleep 0.01
+		xdotool mousemove_relative --sync 365 253 click --repeat 200  --delay 0.01 1
+		# "engage"
+		sleep 1
+		xdotool search --desktop 1 "Rotator" windowactivate --sync mousemove --window %1 0 0
+		sleep 0.01
+		xdotool mousemove_relative --sync 400 185 click 1
+		# "track"
+		sleep 1
+		xdotool search --desktop 1 "Rotator" windowactivate --sync mousemove --window %1 0 0
+		sleep 0.01
+		xdotool mousemove_relative --sync 200 185 click 1
+
+		retval=$?;
+		if [ "$retval" != "0" ]; then
+			echo "Return code was not zero but $retval"
+			exit 1;
+		fi
+		exit 0;
+		;;
+	G)
+		mycmd() {
+			ps -aux | less | grep gpredict | sed -n '1 p' | awk '{ print $2 }'
+		}
+		id=$(mycmd)
+		kill $id
+		exit 0;
+		;;
+	i)
+		echo "Start GPredict interface for rotctld"
+		rotor-calibration
+		retval=$?;
+		if [ "$retval" != "0" ]; then
+			echo "Return code was not zero but $retval"
+			exit 1;
+		fi
+		exit 0;
+		;;
+	I)
+		mycmd() {
+			ps -aux | less | grep rotor-calibration | sed -n '1 p' | awk '{ print $2 }'
+		}
+		id=$(mycmd)
+		kill $id
+		exit 0;
+		;;
+	# a)
+	#     echo "Start camera, rotator daemon and GPredict"
+	#     vlc v4l2:///dev/video0
+	#     retval=$?;
+	#     if [ "$retval" != "0" ]; then
+	#         echo "Return code was not zero but $retval"
+	#         exit 1;
+	#     fi
+	#     echo "Starting Rotor Daemon"
+	#     rotctld -m 603 -r /dev/rotator
+	#     retval=$?;
+	#     if [ "$retval" != "0" ]; then
+	#         echo "Return code was not zero but $retval"
+	#         exit 1;
+	#     fi
+	#     echo "Start GPredict"
+	#     gpredict
+	#     retval=$?;
+	#     if [ "$retval" != "0" ]; then
+	#         echo "Return code was not zero but $retval"
+	#         exit 1;
+	#     fi
+	#     echo "Start GPredict interface for rotctld"
+	#     rotor-calibration
+	#     retval=$?;
+	#     if [ "$retval" != "0" ]; then
+	#         echo "Return code was not zero but $retval"
+	#         exit 1;
+	#     fi
+	#     exit 0;
+	#     ;;
+	# A)
+	#     mycmd() {
+	#         ps -aux | less | grep vlc | sed -n '1 p' | awk '{ print $2 }'
+	#     }
+	#     mycmd1() {
+	#         ps -aux | less | grep rotctld | sed -n '1 p' | awk '{ print $2 }'
+	#     }
+	#     mycmd2() {
+	#         ps -aux | less | grep gpredict | sed -n '1 p' | awk '{ print $2 }'
+	#     }
+	#     mycmd3() {
+	#         ps -aux | less | grep rotor-calibration | sed -n '1 p' | awk '{ print $2 }'
+	#     }
+	#     id=$(mycmd)
+	#     kill $id
+	#     id=$(mycmd1)
+	#     kill $id
+	#     id=$(mycmd2)
+	#     kill $id
+	#     id=$(mycmd3)
+	#     kill $id
+	#     exit 0;
+	#     ;;
+	\?)
+		echo "Invalid option: -$OPTARG" >&2
+		exit 0;
+		;;
+	:)
+		echo "Option -$OPTARG requires an argument." >&2
+		exit 0;
+		;;
+	*)
+		echo "Unknown error while processing options" >&2
+		exit 0;
+		;;
   esac
 done
 
