@@ -1,4 +1,5 @@
-#!/bin/bash
+source /home/tgs/.profile
+source /home/tgs/.bashrc
 # ------------------------------------------------------------------
 # [Author: Boyan Naydenov] TGS Control Suite
 #  Terrassa Ground Station (UPC - ESEIAAT) script designed to handle
@@ -6,21 +7,18 @@
 # ------------------------------------------------------------------
 
 # for file  to work globally: sudo ln -s /path/to/file /usr/bin/start-tracking
+DISPLAY=:0 gnome-screensaver-command -d
+sleep 2
+/home/tgs/repos/suitetgs/tty
 
-echo "Starting PA, LNA and LED \n"
-stty -F /dev/ttyACM0 cs8 9600 ignbrk -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke noflsh -ixon -crtscts
-sleep 1
-tmux new-session -s track -d 'echo "start" > /dev/ttyACM0'
-sleep 1
-
-echo "Starting GS232B communication \n"
-tmux split-window -v 'suitetgs -r'
+echo "Starting GS232B communication"
+/usr/local/bin/tmux new-session -d -s track  '/usr/local/bin/rotctld -m 603 -r /dev/rotator'
 sleep 1
 
-echo "Starting rotator calibrator \n"
-tmux split-window -h 'suitetgs -i'
-sleep 1
-echo "Starting Gpredict and engage in tracking \n"
-tmux select-pane -U
-tmux split-window -h 'suitetgs -g'
-tmux attach -t track
+echo "Starting rotator calibrator"
+/usr/local/bin/tmux split-window -v '/home/tgs/repos/socket-interface/rotor-calibration'
+sleep 2
+
+echo "Starting Gpredict and engage in tracking"
+/usr/bin/suitetgs -g >&2
+# /usr/local/bin/tmux attach -t track

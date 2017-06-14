@@ -104,36 +104,46 @@ while getopts "hvtTcCrRgGiI" opt; do
 		;;
 	g)
 		echo "Start Gpredict tracking"
-		export DISPLAY=:0.0
-		#  starting gpredict
-		gpredict &
+		export DISPLAY=:0
+		# #  starting gpredict
+		gpredict & >&2
 		sleep 1
 		#  Get Gpredict
-		xdotool search --desktop 1 "GPREDICT" windowactivate --sync mousemove --window %1 0 0
-		sleep 0.01
+		xdotool search --desktop 0 "GPREDICT" windowactivate --sync windowsize 1920 1080
+		sleep 1
+		xdotool getactivewindow windowmove 1440 0
+		sleep 1
+		xdotool getactivewindow mousemove --window %1 0 0
+		sleep 1
 		# Open Rotator conifg
-		xdotool mousemove_relative 1300 0
-		sleep 0.01
-		xdotool mousemove_relative 0 30
+		xdotool mousemove_relative 1885 35
 		sleep 0.01
 		xdotool click 1
-		sleep 0.01
-		xdotool mousemove 1200 200
+		sleep 1
+		xdotool mousemove_relative -- -50 143
 		sleep 0.01
 		xdotool click 1
 		sleep 1
 		# Set tolerance of rotator to 3 deg
-		xdotool search --desktop 1 "Rotator" windowactivate --sync mousemove --window %1 0 0
-		sleep 0.01
-		xdotool mousemove_relative --sync 365 253 click --repeat 200  --delay 0.01 1
+		xdotool search --desktop 0 "Rotator" windowactivate --sync mousemove --window %1 0 0
+		sleep 1
+		xdotool mousemove_relative --sync 312 253 mousedown 1
+		sleep 1
+		xdotool mousemove_relative --sync 3 0
+		sleep 0.1
+		xdotool key 3
+		sleep 0.1
+		xdotool mouseup 1
 		# "engage"
 		sleep 1
-		xdotool search --desktop 1 "Rotator" windowactivate --sync mousemove --window %1 0 0
+		xdotool search --desktop 0 "Rotator" windowactivate --sync mousemove --window %1 0 -1
 		sleep 0.01
-		xdotool mousemove_relative --sync 400 185 click 1
+		xdotool mousemove_relative 450 185 
+		sleep 0.01
+		xdotool click 1
 		# "track"
 		sleep 1
-		xdotool search --desktop 1 "Rotator" windowactivate --sync mousemove --window %1 0 0
+		xdotool search --desktop 0 "Rotator" windowactivate --sync mousemove --window %1 0 0
 		sleep 0.01
 		xdotool mousemove_relative --sync 200 185 click 1
 

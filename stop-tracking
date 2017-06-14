@@ -1,4 +1,5 @@
-#!/bin/bash
+source /home/tgs/.profile
+source /home/tgs/.bashrc
 # ------------------------------------------------------------------
 # [Author: Boyan Naydenov] TGS Control Suite
 #  Terrassa Ground Station (UPC - ESEIAAT) script designed to handle
@@ -9,6 +10,8 @@
 echo "Stopping PA, LNA and LED \n"
 stty -F /dev/ttyACM0 cs8 9600 ignbrk -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke noflsh -ixon -crtscts
 sleep 1
-echo "stop" > /dev/ttyUSB0
+/bin/echo "stop" > /dev/ttyACM0
 sleep 1
-tmux kill-session -t track
+/usr/local/bin/tmux kill-session -t track
+killall suitetgs gpredict
+DISPLAY=:0 gnome-screensaver-command -l
