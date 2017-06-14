@@ -1,0 +1,14 @@
+#!/bin/bash
+# ------------------------------------------------------------------
+# [Author: Boyan Naydenov] TGS Control Suite
+#  Terrassa Ground Station (UPC - ESEIAAT) script designed to handle
+#  the different functional blocks (antenna controllers, radio, webcam).
+# ------------------------------------------------------------------
+
+# for file  to work globally: sudo ln -s /path/to/file /usr/bin/stop-tracking
+echo "Stopping PA, LNA and LED \n"
+stty -F /dev/ttyACM0 cs8 9600 ignbrk -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke noflsh -ixon -crtscts
+sleep 1
+echo "stop" > /dev/ttyUSB0
+sleep 1
+tmux kill-session -t track
