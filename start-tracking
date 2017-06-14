@@ -13,12 +13,23 @@ sleep 2
 
 echo "Starting GS232B communication"
 /usr/local/bin/tmux new-session -d -s track  '/usr/local/bin/rotctld -m 603 -r /dev/rotator'
+echo "========================================================================="
 sleep 1
 
 echo "Starting rotator calibrator"
 /usr/local/bin/tmux split-window -v '/home/tgs/repos/socket-interface/rotor-calibration'
+echo "========================================================================="
 sleep 2
 
 echo "Starting Gpredict and engage in tracking"
-/usr/bin/suitetgs -g >&2
+suitetgs -g >&2
+echo "========================================================================="
+sleep 1
+echo "Starting radio"
+/usr/local/bin/tmux new-window -n qb '/home/mark/oc_gs_driver/qbeeclient ::1 49501'
+sleep 2
+echo "========================================================================="
+
+
+
 # /usr/local/bin/tmux attach -t track

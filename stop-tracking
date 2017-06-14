@@ -13,5 +13,5 @@ sleep 1
 /bin/echo "stop" > /dev/ttyACM0
 sleep 1
 /usr/local/bin/tmux kill-session -t track
-killall suitetgs gpredict
-DISPLAY=:0 gnome-screensaver-command -l
+killall suitetgs gpredict rotctld rotor-calibration qb  qbeeclient
+#DISPLAY=:0 gnome-screensaver-command -l
