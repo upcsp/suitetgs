@@ -10,25 +10,26 @@ source /home/tgs/.bashrc
 DISPLAY=:0 gnome-screensaver-command -d
 sleep 2
 /home/tgs/repos/suitetgs/tty
-
-echo "Starting GS232B communication"
+echo "===============================START===================================="
+echo "1 - Starting GS232B communication"
 /usr/local/bin/tmux new-session -d -s track  '/usr/local/bin/rotctld -m 603 -r /dev/rotator'
-echo "========================================================================="
+echo " "
 sleep 1
 
-echo "Starting rotator calibrator"
+echo "2 - Starting rotator calibrator"
 /usr/local/bin/tmux split-window -v '/home/tgs/repos/socket-interface/rotor-calibration'
-echo "========================================================================="
+echo " "
 sleep 2
 
-echo "Starting Gpredict and engage in tracking"
+echo "3 - Starting Gpredict and engage in tracking"
 suitetgs -g >&2
-echo "========================================================================="
+echo " "
 sleep 1
-echo "Starting radio"
+echo "4 - Starting radio"
 /usr/local/bin/tmux new-window -n qb '/home/mark/oc_gs_driver/qbeeclient ::1 49501'
+#/usr/local/bin/tmux new-window -n qb '/home/mark/qbrecord'
 sleep 2
-echo "========================================================================="
+echo "==================================FINISH=================================="
 
 
 

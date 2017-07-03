@@ -7,11 +7,11 @@ source /home/tgs/.bashrc
 # ------------------------------------------------------------------
 
 # for file  to work globally: sudo ln -s /path/to/file /usr/bin/stop-tracking
-echo "Stopping PA, LNA and LED \n"
+echo "Stopping PA, LNA and LED"
 stty -F /dev/ttyACM0 cs8 9600 ignbrk -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke noflsh -ixon -crtscts
 sleep 1
 /bin/echo "stop" > /dev/ttyACM0
 sleep 1
 /usr/local/bin/tmux kill-session -t track
-killall suitetgs gpredict rotctld rotor-calibration qb  qbeeclient
-#DISPLAY=:0 gnome-screensaver-command -l
+killall suitetgs gpredict rotctld rotor-calibration qb qbeeclient qbrecord
+DISPLAY=:0 gnome-screensaver-command -l
