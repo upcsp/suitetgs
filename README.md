@@ -21,5 +21,4 @@ Please, refer to the program help menu in order to learn how to use it.
 
 License
 ----
-
 GPL
