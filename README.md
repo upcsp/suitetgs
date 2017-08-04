@@ -11,7 +11,7 @@ the different functional blocks (antenna controllers, radio, webcam).
 
 Please, refer to the program help menu in order to learn how to use it.
 
-### Todos
+### To-dos
 
 1. long flags
 2. Add dependecies managment
